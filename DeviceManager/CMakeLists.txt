@@ -12,6 +12,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+# 添加sdplog目录
+include_directories(include/third_lib/spdlog)
+# 添加WinDevice目录
+include_directories(../WinDevice)
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
