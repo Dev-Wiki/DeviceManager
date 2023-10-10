@@ -9,13 +9,17 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# 设置源代码文件编码为UTF-8
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 # 添加sdplog目录
-include_directories(include/third_lib/spdlog)
-# 添加WinDevice目录
-include_directories(../WinDevice)
+include_directories(include/third_lib)
+
+# 添加WinDevice项目
+add_subdirectory(../WinDevice WinDevice)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -48,6 +52,14 @@ else()
 endif()
 
 target_link_libraries(DeviceManager PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+# 链接WinDevice项目
+target_include_directories(DeviceManager PRIVATE
+    ../WinDevice
+)
+# 将WinDevice项目的头文件路径添加到DeviceManager项目中
+target_include_directories(DeviceManager PRIVATE
+    ../WinDevice/src  # 根据实际路径进行修改
+)
 
 set_target_properties(DeviceManager PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

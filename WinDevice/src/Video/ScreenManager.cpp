@@ -46,33 +46,33 @@ BOOL ScreenManager::_EnumMonitorProc(HMONITOR hMonitor)
 	monitorInfo.cbSize = sizeof(MONITORINFOEX);
 	if (GetMonitorInfo(hMonitor, &monitorInfo))
 	{
-		// Êä³öÓÑºÃÃû³Æ
+		// è¾“å‡ºå‹å¥½åç§°
 		spdlog::info("_UpdateMonitorInfoMap, szDevice:{0}, right:{1}, bottom:{2}", Wchar2String(monitorInfo.szDevice),
 			monitorInfo.rcMonitor.right, monitorInfo.rcMonitor.bottom);
 	}
 	auto it = ScreenManager::_hMonitorInfoMap.find(hMonitor);
 	if (it != ScreenManager::_hMonitorInfoMap.end())
 	{
-		// ¼üÒÑ¾­´æÔÚ£¬±íÊ¾´æÔÚÖØ¸´
-		// ÔÚÕâÀï´¦ÀíÖØ¸´µÄÇé¿ö
+		// é”®å·²ç»å­˜åœ¨ï¼Œè¡¨ç¤ºå­˜åœ¨é‡å¤
+		// åœ¨è¿™é‡Œå¤„ç†é‡å¤çš„æƒ…å†µ
 	}
 	else
 	{
 		ScreenManager::_hMonitorInfoMap.insert(std::make_pair(hMonitor, monitorInfo));
-		// ¼ü²»´æÔÚ£¬±íÊ¾Ã»ÓĞÖØ¸´
-		// ÔÚÕâÀï´¦Àí·ÇÖØ¸´µÄÇé¿ö
+		// é”®ä¸å­˜åœ¨ï¼Œè¡¨ç¤ºæ²¡æœ‰é‡å¤
+		// åœ¨è¿™é‡Œå¤„ç†éé‡å¤çš„æƒ…å†µ
 	}
 
 	DISPLAYCONFIG_TARGET_DEVICE_NAME targetDeviceName = {};
 	targetDeviceName.header.size = sizeof(targetDeviceName);
 
-	// »ñÈ¡Ö¸¶¨ HMONITOR µÄÄ¿±êÉè±¸Ãû³ÆĞÅÏ¢
+	// è·å–æŒ‡å®š HMONITOR çš„ç›®æ ‡è®¾å¤‡åç§°ä¿¡æ¯
 	if (DisplayConfigGetDeviceInfo(&targetDeviceName.header) == ERROR_SUCCESS)
 	{
 		spdlog::info("_UpdateMonitorInfoMap, monitorDevicePath:{0}, monitorFriendlyDeviceName:{1}",
 			Wchar2String(targetDeviceName.monitorDevicePath), Wchar2String(targetDeviceName.monitorFriendlyDeviceName));
 
-		// »ñÈ¡Ö¸¶¨ HMONITOR µÄ·Ö±æÂÊĞÅÏ¢
+		// è·å–æŒ‡å®š HMONITOR çš„åˆ†è¾¨ç‡ä¿¡æ¯
 		DEVMODE dm;
 		dm.dmSize = sizeof(DEVMODE);
 		dm.dmDriverExtra = 0;
@@ -101,7 +101,7 @@ BOOL CALLBACK ScreenManager::EnumMonitorsProc(HMONITOR hMonitor, HDC hdcMonitor,
 void ScreenManager::_UpdateMonitorInfoMap()
 {
 	spdlog::info("=====GetInfoByEnumDisplayMonitors start=====");
-	// Ã¶¾ÙÏÔÊ¾Æ÷
+	// æšä¸¾æ˜¾ç¤ºå™¨
 	EnumDisplayMonitors(nullptr, nullptr, EnumMonitorsProc, reinterpret_cast<LPARAM>(this));
 	spdlog::info("=====GetInfoByEnumDisplayMonitors end=====");
 }
