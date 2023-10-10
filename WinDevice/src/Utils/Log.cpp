@@ -9,11 +9,9 @@ void Log::Init(LogLevel level, std::string fileName)
 
 void Log::Info(std::string format, std::string args...)
 {
-	spdlog::info(format, args);
 }
 
 void Log::WInfo(std::wstring format, std::wstring args...)
 {
-	std::string s_format(format.begin(), format.end());
 
 }

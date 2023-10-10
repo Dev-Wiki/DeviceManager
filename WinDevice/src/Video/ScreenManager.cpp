@@ -31,8 +31,7 @@ void ScreenManager::_UpdateDisplayDeviceList()
     while (EnumDisplayDevices(nullptr, deviceIndex, &displayDevice, 0))
     {
         spdlog::info("Display Device DeviceName:{0}, DeviceString:{1}, DeviceID:{2}, DeviceKey:{3}.", 
-			Wstring2String(displayDevice.DeviceName), Wstring2String(displayDevice.DeviceString),
-			Wstring2String(displayDevice.DeviceID), Wstring2String(displayDevice.DeviceKey));
+			displayDevice.DeviceName, displayDevice.DeviceString, displayDevice.DeviceID, displayDevice.DeviceKey);
         _displayDeviceList.push_back(displayDevice);
         deviceIndex++;
     }
@@ -47,7 +46,7 @@ BOOL ScreenManager::_EnumMonitorProc(HMONITOR hMonitor)
 	if (GetMonitorInfo(hMonitor, &monitorInfo))
 	{
 		// 输出友好名称
-		spdlog::info("_UpdateMonitorInfoMap, szDevice:{0}, right:{1}, bottom:{2}", Wchar2String(monitorInfo.szDevice),
+		spdlog::info("_UpdateMonitorInfoMap, szDevice:{0}, right:{1}, bottom:{2}", monitorInfo.szDevice,
 			monitorInfo.rcMonitor.right, monitorInfo.rcMonitor.bottom);
 	}
 	auto it = ScreenManager::_hMonitorInfoMap.find(hMonitor);
@@ -77,7 +76,7 @@ BOOL ScreenManager::_EnumMonitorProc(HMONITOR hMonitor)
 		dm.dmSize = sizeof(DEVMODE);
 		dm.dmDriverExtra = 0;
 
-		if (EnumDisplaySettings(targetDeviceName.monitorDevicePath, ENUM_CURRENT_SETTINGS, &dm) != 0)
+		if (EnumDisplaySettingsA((LPCSTR)targetDeviceName.monitorDevicePath, ENUM_CURRENT_SETTINGS, &dm) != 0)
 		{
 			spdlog::info("Resolution:{0}x{1}", dm.dmPelsWidth, dm.dmPelsHeight);
 		}

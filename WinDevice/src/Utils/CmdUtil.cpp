@@ -1,5 +1,4 @@
 ﻿#include "CmdUtil.h"
-#include <stdafx.h>
 
 #include <iostream>
 #include <Windows.h>

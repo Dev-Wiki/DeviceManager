@@ -25,15 +25,19 @@ if (ENABLE_UTF8_SOURCE)
 endif()
 
 # 使用通配符自动列举源文件
-file(GLOB WinDevice_SOURCES
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/Audio/*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/Video/*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/Utils/*.cpp"
+file(GLOB PROJECT_SOURCES
+    src/*.cpp
+    src/*.h
+    src/Audio/*.cpp
+    src/Audio/*.h
+    src/Video/*.cpp
+    src/Video/*.h
+    src/Utils/*.cpp
+    src/Utils/*.h
 )
 
 # 添加功能模块的源文件
-add_library(WinDevice ${WinDevice_SOURCES})
+add_library(WinDevice ${PROJECT_SOURCES})
 
 # 设置WinDevice库的公共包含目录
 target_include_directories(WinDevice PUBLIC
@@ -43,6 +47,6 @@ target_include_directories(WinDevice PUBLIC
 # 设置WinDevice库的私有包含目录，包括第三方库和源码目录
 set(THIRD_LIB_DIR ${CMAKE_SOURCE_DIR}/include/third_lib)
 target_include_directories(WinDevice PRIVATE
-    ${THIRD_LIB_DIR}
-    "${CMAKE_SOURCE_DIR}/src"
+    include/third_lib
+    src
 )

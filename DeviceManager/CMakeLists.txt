@@ -15,7 +15,6 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -46,17 +45,15 @@ else()
     endif()
 endif()
 
-
+target_link_libraries(DeviceManager PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 # 添加WinDevice项目
 add_subdirectory(../WinDevice WinDevice)
-
-target_link_libraries(DeviceManager PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 # 链接WinDevice项目
 target_link_libraries(DeviceManager PRIVATE WinDevice)
 # 链接WinDevice项目
 target_include_directories(DeviceManager PRIVATE
-    include/third_lib
     ../WinDevice/src
+    include/third_lib
 )
 
 set_target_properties(DeviceManager PROPERTIES
