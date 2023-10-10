@@ -110,7 +110,7 @@ void SysInfoUtil::GetInfoByEdid()
                         wcout << L"SerialNumberID =" << pwsSerialNumberID << endl;
                         // swprintf(wsText, L"Serial Number ID = %s\r\n", pwsSerialNumberID);
                         OutputDebugString(wsText);
-
+                        
                         if (!pWmiAllData->WnodeHeader.Linkage)
                             break;
                         pAllDataBuffer += pWmiAllData->WnodeHeader.Linkage;

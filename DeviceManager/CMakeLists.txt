@@ -15,11 +15,6 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-# 添加sdplog目录
-include_directories(include/third_lib)
-
-# 添加WinDevice项目
-add_subdirectory(../WinDevice WinDevice)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -51,14 +46,17 @@ else()
     endif()
 endif()
 
+
+# 添加WinDevice项目
+add_subdirectory(../WinDevice WinDevice)
+
 target_link_libraries(DeviceManager PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 # 链接WinDevice项目
+target_link_libraries(DeviceManager PRIVATE WinDevice)
+# 链接WinDevice项目
 target_include_directories(DeviceManager PRIVATE
-    ../WinDevice
-)
-# 将WinDevice项目的头文件路径添加到DeviceManager项目中
-target_include_directories(DeviceManager PRIVATE
-    ../WinDevice/src  # 根据实际路径进行修改
+    include/third_lib
+    ../WinDevice/src
 )
 
 set_target_properties(DeviceManager PROPERTIES
