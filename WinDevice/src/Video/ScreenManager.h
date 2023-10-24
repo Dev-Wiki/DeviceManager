@@ -3,20 +3,23 @@
 #include <map>
 
 #include <Mmdeviceapi.h>
+#include <dxgi1_6.h>
 
 class ScreenManager
 {
 public:
 	ScreenManager();
 	~ScreenManager();
-	void UpdateDisplayInfo();
+    void UpdateDisplayInfo();
+
+    std::vector<DISPLAY_DEVICE> _displayDeviceList;
+    std::map<HMONITOR, MONITORINFOEX> _hMonitorInfoMap;
+    std::vector<IDXGIAdapter*> _displayAdapterList;
 
 private:
 	void _UpdateDisplayDeviceList();
 	void _UpdateMonitorInfoMap();
+    void _UpdateDisplayAdapterList();
 	static BOOL CALLBACK EnumMonitorsProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
 	BOOL _EnumMonitorProc(HMONITOR hMonitor);
-
-	std::vector<DISPLAY_DEVICE> _displayDeviceList;
-	std::map<HMONITOR, MONITORINFOEX> _hMonitorInfoMap;
 };

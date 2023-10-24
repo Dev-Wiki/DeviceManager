@@ -1,9 +1,9 @@
 #include "ScreenManager.h"
+#include <Windows.h>
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "Utils/StringUtil.h"
-
 
 ScreenManager::ScreenManager()
 {
@@ -19,6 +19,7 @@ void ScreenManager::UpdateDisplayInfo()
 {
 	_UpdateDisplayDeviceList();
 	_UpdateMonitorInfoMap();
+	_UpdateDisplayAdapterList();
 }
 
 void ScreenManager::_UpdateDisplayDeviceList()
@@ -37,6 +38,35 @@ void ScreenManager::_UpdateDisplayDeviceList()
     }
 
     spdlog::info("=====GetInfoByEnumDisplayDevices end=====");
+}
+
+void ScreenManager::_UpdateDisplayAdapterList()
+{
+    spdlog::info("=====_UpdateDisplayAdapterList start=====");
+    HRESULT hr = S_OK;
+    hr = CoInitialize(nullptr);
+    if (FAILED(hr)) {
+        spdlog::error("_UpdateDisplayAdapterList CoInitialize failed");
+        return;
+    }
+
+    IDXGIFactory7* dxgiFactory = nullptr;
+    hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
+    if (FAILED(hr)) {
+        spdlog::error("CreateDXGIFactory1 failed");
+        CoUninitialize();
+        return;
+    }
+
+    UINT adapterIndex = 0;
+    IDXGIAdapter* adapter = nullptr;
+
+    while (dxgiFactory->EnumAdapters(adapterIndex, &adapter) != DXGI_ERROR_NOT_FOUND) {
+        _displayAdapterList.push_back(adapter); // 将 IDXGIAdapter 指针存储在容器中
+        adapterIndex++;
+    }
+    dxgiFactory->Release();
+    CoUninitialize();
 }
 
 BOOL ScreenManager::_EnumMonitorProc(HMONITOR hMonitor)

@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.12)
 # 设置项目名称和版本，以及编程语言
 project(WinDevice VERSION 0.1 LANGUAGES CXX)
 
+# 允许 Windows 导出所有符号
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -50,3 +53,24 @@ target_include_directories(WinDevice PRIVATE
     include/third_lib
     src
 )
+
+# 设置库文件输出目录相对于 WinDevice 项目的根目录
+set(LIB_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/lib")
+# 设置库的输出路径
+set_target_properties(WinDevice PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${LIB_OUTPUT_DIR}  # 设置静态库输出路径
+    LIBRARY_OUTPUT_DIRECTORY ${LIB_OUTPUT_DIR}  # 设置动态链接库输出路径
+)
+
+# 设置发布目录，例如 "install" 文件夹
+set(INSTALL_DIR "${CMAKE_SOURCE_DIR}/install")
+
+# 在发布阶段将库文件安装到指定目录
+install(TARGETS WinDevice
+    ARCHIVE DESTINATION "${INSTALL_DIR}/lib"  # 安装静态库文件
+    LIBRARY DESTINATION "${INSTALL_DIR}/lib"  # 安装动态链接库文件
+)
+
+target_link_libraries(WinDevice PRIVATE dxguid)
+
+target_compile_definitions(WinDevice PRIVATE -DWINDEVICE_EXPORTS)

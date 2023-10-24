@@ -20,6 +20,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        Utils/LogManager.cpp
+        Utils/LogManager.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -46,15 +48,27 @@ else()
 endif()
 
 target_link_libraries(DeviceManager PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-# 添加WinDevice项目
-add_subdirectory(../WinDevice WinDevice)
-# 链接WinDevice项目
-target_link_libraries(DeviceManager PRIVATE WinDevice)
-# 链接WinDevice项目
-target_include_directories(DeviceManager PRIVATE
-    ../WinDevice/src
-    include/third_lib
-)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # Debug 模式下，添加 WinDevice 项目作为子项目
+    add_subdirectory(../WinDevice WinDevice)
+    # 链接WinDevice项目
+    target_include_directories(DeviceManager PRIVATE
+        ../WinDevice/src
+        include/third_lib
+    )
+    target_link_libraries(DeviceManager PRIVATE WinDevice)
+else()
+    # Release 模式下，链接 WinDevice 生成的库文件
+    target_link_libraries(DeviceManager PRIVATE WinDevice)
+    # 在 Release 模式下，添加 WinDevice 的头文件路径
+    target_include_directories(DeviceManager PRIVATE
+        ../WinDevice/lib
+    )
+endif()
+
+
+## target_link_libraries(DeviceManager PRIVATE dxgi)
 
 set_target_properties(DeviceManager PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
