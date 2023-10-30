@@ -79,3 +79,4 @@ CMakeLists.txt.user*
 */out
 */lib
 */cmake*
+*/build

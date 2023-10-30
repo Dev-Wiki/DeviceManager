@@ -27,6 +27,15 @@ if (ENABLE_UTF8_SOURCE)
     endif()
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # Debug 模式下的配置
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
+    set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/debug/lib")
+else()
+    # Release 模式下的配置
+    set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/release/lib")
+endif()
+
 # 使用通配符自动列举源文件
 file(GLOB PROJECT_SOURCES
     src/*.cpp
@@ -54,13 +63,8 @@ target_include_directories(WinDevice PRIVATE
     src
 )
 
-# 设置库文件输出目录相对于 WinDevice 项目的根目录
-set(LIB_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/lib")
-# 设置库的输出路径
-set_target_properties(WinDevice PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${LIB_OUTPUT_DIR}  # 设置静态库输出路径
-    LIBRARY_OUTPUT_DIRECTORY ${LIB_OUTPUT_DIR}  # 设置动态链接库输出路径
-)
+target_include_directories(WinDevice PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_include_directories(WinDevice PRIVATE "${CMAKE_SOURCE_DIR}/include/third_lib")
 
 # 设置发布目录，例如 "install" 文件夹
 set(INSTALL_DIR "${CMAKE_SOURCE_DIR}/install")
@@ -72,5 +76,4 @@ install(TARGETS WinDevice
 )
 
 target_link_libraries(WinDevice PRIVATE dxguid)
-
 target_compile_definitions(WinDevice PRIVATE -DWINDEVICE_EXPORTS)
