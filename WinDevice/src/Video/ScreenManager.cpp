@@ -4,6 +4,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "Utils/StringUtil.h"
+#include "Utils/Log.h"
 
 ScreenManager::ScreenManager()
 {
@@ -42,31 +43,43 @@ void ScreenManager::_UpdateDisplayDeviceList()
 
 void ScreenManager::_UpdateDisplayAdapterList()
 {
-    spdlog::info("=====_UpdateDisplayAdapterList start=====");
+	LOG_FUNC_START();
     HRESULT hr = S_OK;
-    hr = CoInitialize(nullptr);
+    IDXGIFactory* pFactory = nullptr;
+    hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&pFactory));
     if (FAILED(hr)) {
-        spdlog::error("_UpdateDisplayAdapterList CoInitialize failed");
+        spdlog::error("CreateDXGIFactory failed");
         return;
     }
 
-    IDXGIFactory7* dxgiFactory = nullptr;
-    hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
-    if (FAILED(hr)) {
-        spdlog::error("CreateDXGIFactory1 failed");
-        CoUninitialize();
-        return;
-    }
+	IDXGIAdapter* pAdapter = nullptr;
+	for (UINT adapterIndex = 0; pFactory->EnumAdapters(adapterIndex, &pAdapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex)
+	{
+		DXGI_ADAPTER_DESC adapterDesc;
+		pAdapter->GetDesc(&adapterDesc);
+		spdlog::info("Adapter Index:{0}, Description:{1}, DeviceId:{2}, VendorId:{3}, SubSysId:{4}, Revision:{5}, AdapterLuid(H-L):{6}-{7} ",
+			adapterIndex, Wchar2String(adapterDesc.Description), adapterDesc.DeviceId, adapterDesc.VendorId, adapterDesc.SubSysId,
+			adapterDesc.Revision, adapterDesc.AdapterLuid.HighPart, adapterDesc.AdapterLuid.LowPart);
 
-    UINT adapterIndex = 0;
-    IDXGIAdapter* adapter = nullptr;
-
-    while (dxgiFactory->EnumAdapters(adapterIndex, &adapter) != DXGI_ERROR_NOT_FOUND) {
-        _displayAdapterList.push_back(adapter); // 将 IDXGIAdapter 指针存储在容器中
-        adapterIndex++;
-    }
-    dxgiFactory->Release();
-    CoUninitialize();
+		// print adapter output info
+		IDXGIOutput* pOutput;
+		int outputCount = 0;
+		for (UINT j = 0; pAdapter->EnumOutputs(j, &pOutput) != DXGI_ERROR_NOT_FOUND; ++j) {
+			DXGI_OUTPUT_DESC outputDesc;
+			pOutput->GetDesc(&outputDesc);
+            
+            MONITORINFOEX monitorInfo;
+            monitorInfo.cbSize = sizeof(MONITORINFOEX);
+            if (GetMonitorInfo(outputDesc.Monitor, &monitorInfo))
+            {
+                // 输出友好名称
+                spdlog::info("Adapter Output Index:{0}, DeviceName:{1}, szDevice:{2}, right:{3}, bottom:{4}",
+                             j, Wchar2String(outputDesc.DeviceName), monitorInfo.szDevice, monitorInfo.rcMonitor.right, monitorInfo.rcMonitor.bottom);
+            }
+		}
+	}
+	pFactory->Release();
+	LOG_FUNC_END();
 }
 
 BOOL ScreenManager::_EnumMonitorProc(HMONITOR hMonitor)
