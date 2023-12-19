@@ -80,3 +80,4 @@ CMakeLists.txt.user*
 */lib
 */cmake*
 */build
+build*/

@@ -27,53 +27,75 @@ if (ENABLE_UTF8_SOURCE)
     endif()
 endif()
 
+# 使用通配符自动列举源文件
+file(GLOB_RECURSE SOURCE_FILES "./src/*")
+# 添加功能模块的源文件
+add_library(WinDevice SHARED
+        ${SOURCE_FILES}
+)
+
+# DirectX目录
+set(Windows_Kits_DIR "C:\\Program Files (x86)\\Windows Kits\\10")
+set(Windows_Kits_Version "10.0.19041.0")
+set(DirectX_SDK_INCLUDE_DIR "${Windows_Kits_DIR}\\Include\\${Windows_Kits_Version}\\um")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 64-bit 架构
+    set(CMAKE_LIBRARY_ARCHITECTURE x64)
+    set(DirectX_SDK_LIB_DIR "${Windows_Kits_DIR}\\Lib\\${Windows_Kits_Version}\\um\\x64")
+else()
+    # 32-bit 架构
+    set(CMAKE_LIBRARY_ARCHITECTURE x86)
+    set(DirectX_SDK_LIB_DIR "${Windows_Kits_DIR}\\Lib\\${Windows_Kits_Version}\\um\\x86")
+endif()
+
+# 设置WinDevice库的包含目录
+target_include_directories(WinDevice
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        PRIVATE
+        ${DirectX_SDK_INCLUDE_DIR}
+        include/third_lib
+)
+
+# 链接 d3d 的 lib
+target_link_libraries(WinDevice PRIVATE
+        "${DirectX_SDK_LIB_DIR}\\d3d9.lib"
+        "${DirectX_SDK_LIB_DIR}\\d3d10.lib"
+        "${DirectX_SDK_LIB_DIR}\\d3d11.lib"
+        "${DirectX_SDK_LIB_DIR}\\d3d12.lib"
+        "${DirectX_SDK_LIB_DIR}\\ddraw.lib"
+        "${DirectX_SDK_LIB_DIR}\\dxgi.lib")
+
+# 创建 output 目录
+set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/output)
+file(MAKE_DIRECTORY ${OUTPUT_DIR})
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Debug 模式下的配置
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
-    set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/debug/lib")
+    set(LIBRARY_OUTPUT_PATH "${OUTPUT_DIR}/debug")
 else()
     # Release 模式下的配置
-    set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/release/lib")
+    set(LIBRARY_OUTPUT_PATH "${OUTPUT_DIR}/release")
 endif()
 
-# 使用通配符自动列举源文件
-file(GLOB PROJECT_SOURCES
-    src/*.cpp
-    src/*.h
-    src/Audio/*.cpp
-    src/Audio/*.h
-    src/Video/*.cpp
-    src/Video/*.h
-    src/Utils/*.cpp
-    src/Utils/*.h
-)
 
-# 添加功能模块的源文件
-add_library(WinDevice ${PROJECT_SOURCES})
+# 拷贝头文件到构建目录的 include 文件夹下
+file(GLOB_RECURSE EXPORTED_HEADERS ${CMAKE_SOURCE_DIR}/src/*.h)
+foreach(HEADER ${EXPORTED_HEADERS})
+    get_filename_component(HEADER_DIR ${HEADER} DIRECTORY)
+    get_filename_component(HEADER_NAME ${HEADER} NAME)
+    string(REPLACE "${CMAKE_SOURCE_DIR}/src/" "" HEADER_RELATIVE_PATH ${HEADER_DIR})
+    file(COPY ${HEADER} DESTINATION ${OUTPUT_DIR}/include/${HEADER_RELATIVE_PATH})
+endforeach()
 
-# 设置WinDevice库的公共包含目录
-target_include_directories(WinDevice PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
+# 创建 output/third_lib 目录
+set(OUTPUT_THIRD_LIB_DIR ${OUTPUT_DIR}/third_lib)
+file(MAKE_DIRECTORY ${OUTPUT_THIRD_LIB_DIR})
 
-# 设置WinDevice库的私有包含目录，包括第三方库和源码目录
-set(THIRD_LIB_DIR ${CMAKE_SOURCE_DIR}/include/third_lib)
-target_include_directories(WinDevice PRIVATE
-    include/third_lib
-    src
-)
+# 拷贝 include/third_lib 目录下的文件到 output/third_lib 目录中
+file(COPY ${CMAKE_SOURCE_DIR}/include/third_lib/ DESTINATION ${OUTPUT_THIRD_LIB_DIR})
 
-target_include_directories(WinDevice PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_include_directories(WinDevice PRIVATE "${CMAKE_SOURCE_DIR}/include/third_lib")
 
-# 设置发布目录，例如 "install" 文件夹
-set(INSTALL_DIR "${CMAKE_SOURCE_DIR}/install")
-
-# 在发布阶段将库文件安装到指定目录
-install(TARGETS WinDevice
-    ARCHIVE DESTINATION "${INSTALL_DIR}/lib"  # 安装静态库文件
-    LIBRARY DESTINATION "${INSTALL_DIR}/lib"  # 安装动态链接库文件
-)
-
-target_link_libraries(WinDevice PRIVATE dxguid)
 target_compile_definitions(WinDevice PRIVATE -DWINDEVICE_EXPORTS)
