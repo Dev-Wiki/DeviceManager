@@ -49,26 +49,41 @@ endif()
 
 target_link_libraries(DeviceManager PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
+set(WinDevice_INCLUDE_DIR "../WinDevice/output/include/")
+set(WinDevice_THIRD_INCLUDE_DIR "../WinDevice/output/third_lib/")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # Debug 模式下，添加 WinDevice 项目作为子项目
-    add_subdirectory(../WinDevice WinDevice)
-    # 链接WinDevice项目
-    target_include_directories(DeviceManager PRIVATE
-        ../WinDevice/src
-        include/third_lib
-    )
-    target_link_libraries(DeviceManager PRIVATE WinDevice)
+    set(WinDevice_LIB_DIR "../WinDevice/output/debug/")
 else()
-    # Release 模式下，链接 WinDevice 生成的库文件
-    target_link_libraries(DeviceManager PRIVATE WinDevice)
-    # 在 Release 模式下，添加 WinDevice 的头文件路径
-    target_include_directories(DeviceManager PRIVATE
-        ../WinDevice/lib
-    )
+    set(WinDevice_LIB_DIR "../WinDevice/output/release/")
 endif()
+# 使用 find_library 查找动态库文件
+find_library(WinDevice_LIB
+    NAMES WinDevice
+    HINTS ${WinDevice_LIB_DIR}
+)
+# 添加头文件目录
+include_directories(${WinDevice_INCLUDE_DIR} ${WinDevice_THIRD_INCLUDE_DIR})
+# 将找到的库链接到你的目标
+target_link_libraries(DeviceManager PRIVATE ${WinDevice_LIB})
 
+# if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#     # Debug 模式下，添加 WinDevice 项目作为子项目
+#     add_subdirectory(../WinDevice WinDevice)
+#     # 链接WinDevice项目
+#     target_include_directories(DeviceManager PRIVATE
+#         ../WinDevice/src
+#         include/third_lib
+#     )
+#     target_link_libraries(DeviceManager PRIVATE WinDevice)
+# else()
+#     # Release 模式下，链接 WinDevice 生成的库文件
+#     target_link_libraries(DeviceManager PRIVATE WinDevice)
+#     # 在 Release 模式下，添加 WinDevice 的头文件路径
+#     target_include_directories(DeviceManager PRIVATE
+#         ../WinDevice/lib
+#     )
+# endif()
 
-## target_link_libraries(DeviceManager PRIVATE dxgi)
 
 set_target_properties(DeviceManager PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

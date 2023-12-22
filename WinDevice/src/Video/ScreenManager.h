@@ -1,9 +1,7 @@
 ﻿#pragma once
 #include <vector>
 #include <map>
-
-#include <Mmdeviceapi.h>
-#include <dxgi1_6.h>
+#include <dxgi.h>
 
 class ScreenManager
 {

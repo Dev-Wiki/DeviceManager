@@ -27,13 +27,6 @@ if (ENABLE_UTF8_SOURCE)
     endif()
 endif()
 
-# 使用通配符自动列举源文件
-file(GLOB_RECURSE SOURCE_FILES "./src/*")
-# 添加功能模块的源文件
-add_library(WinDevice SHARED
-        ${SOURCE_FILES}
-)
-
 # DirectX目录
 set(Windows_Kits_DIR "C:\\Program Files (x86)\\Windows Kits\\10")
 set(Windows_Kits_Version "10.0.19041.0")
@@ -48,24 +41,33 @@ else()
     set(CMAKE_LIBRARY_ARCHITECTURE x86)
     set(DirectX_SDK_LIB_DIR "${Windows_Kits_DIR}\\Lib\\${Windows_Kits_Version}\\um\\x86")
 endif()
+# 获取所有 DirectX 相关的库文件
+file(GLOB DirectX_LIBS
+        "${DirectX_SDK_LIB_DIR}/d3d9.lib"
+        "${DirectX_SDK_LIB_DIR}/d3d10.lib"
+        "${DirectX_SDK_LIB_DIR}/d3d11.lib"
+        "${DirectX_SDK_LIB_DIR}/d3d12.lib"
+        "${DirectX_SDK_LIB_DIR}/dxgi.lib"
+        "${DirectX_SDK_LIB_DIR}/ddraw.lib"
+)
 
+# 使用通配符自动列举源文件
+file(GLOB_RECURSE SOURCE_FILES "./src/*")
+set(Third_Include_DIR "include/third_lib/")
+# 添加功能模块的源文件
+add_library(WinDevice SHARED
+        ${SOURCE_FILES}
+)
 # 设置WinDevice库的包含目录
 target_include_directories(WinDevice
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
         PRIVATE
         ${DirectX_SDK_INCLUDE_DIR}
-        include/third_lib
+        ${Third_Include_DIR}
 )
-
 # 链接 d3d 的 lib
-target_link_libraries(WinDevice PRIVATE
-        "${DirectX_SDK_LIB_DIR}\\d3d9.lib"
-        "${DirectX_SDK_LIB_DIR}\\d3d10.lib"
-        "${DirectX_SDK_LIB_DIR}\\d3d11.lib"
-        "${DirectX_SDK_LIB_DIR}\\d3d12.lib"
-        "${DirectX_SDK_LIB_DIR}\\ddraw.lib"
-        "${DirectX_SDK_LIB_DIR}\\dxgi.lib")
+target_link_libraries(WinDevice PRIVATE ${DirectX_LIBS})
 
 # 创建 output 目录
 set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/output)
@@ -75,6 +77,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Debug 模式下的配置
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
     set(LIBRARY_OUTPUT_PATH "${OUTPUT_DIR}/debug")
+    # 添加测试
+    add_executable(WinDeviceTest "src/main.cpp" ${SOURCE_FILES})
+    target_include_directories(WinDeviceTest 
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+            PRIVATE ${Third_Include_DIR}  ${DirectX_SDK_INCLUDE_DIR})
+    target_link_libraries(WinDeviceTest PRIVATE ${DirectX_LIBS})
 else()
     # Release 模式下的配置
     set(LIBRARY_OUTPUT_PATH "${OUTPUT_DIR}/release")
